@@ -177,11 +177,6 @@ if (accountNum == -1)
 }
 
 printf("Next available account number: %d\n", accountNum);
-    if (accountNum < 1 || accountNum > 100)
-    {
-        printf("Error: Account must be 1-100\n");
-        return;
-    }
 
     fseek(fPtr, (accountNum - 1) * sizeof(struct clientData), SEEK_SET);
     if (fread(&client, sizeof(struct clientData), 1, fPtr) != 1)
@@ -202,6 +197,12 @@ printf("Next available account number: %d\n", accountNum);
     scanf("%9s", client.firstName);
     printf("Enter initial balance: $");
     scanf("%lf", &client.balance);
+
+    if (client.balance < 0)
+    {
+        printf("Error: Balance cannot be negative.\n");
+        return;
+    }
     while (getchar() != '\n');
 
     client.acctNum = accountNum;
