@@ -20,6 +20,7 @@ void textFile(FILE *readPtr);
 void updateRecord(FILE *fPtr);
 void newRecord(FILE *fPtr);
 void deleteRecord(FILE *fPtr);
+int findEmptyRecord(FILE *fPtr);
 
 int main(int argc, char *argv[])
 {
@@ -165,12 +166,17 @@ void updateRecord(FILE *fPtr)
 void newRecord(FILE *fPtr)
 {
     struct clientData client = {0, "", "", 0.0};
-    unsigned int accountNum;
+    int accountNum;
 
-    printf("Enter new account number (1-100): ");
-    scanf("%u", &accountNum);
-    while (getchar() != '\n');
+accountNum = findEmptyRecord(fPtr);
 
+if (accountNum == -1)
+{
+    printf("All accounts are full.\n");
+    return;
+}
+
+printf("Next available account number: %d\n", accountNum);
     if (accountNum < 1 || accountNum > 100)
     {
         printf("Error: Account must be 1-100\n");
@@ -271,4 +277,21 @@ unsigned int enterChoice(void)
     scanf("%u", &choice);
     while (getchar() != '\n');
     return choice;
+}
+int findEmptyRecord(FILE *fPtr)
+{
+    struct clientData client;
+
+    rewind(fPtr);
+
+    for (int i = 0; i < 100; i++)
+    {
+        if (fread(&client, sizeof(struct clientData), 1, fPtr) != 1)
+            return -1;
+
+        if (client.acctNum == 0)
+            return i + 1;
+    }
+
+    return -1;
 }
