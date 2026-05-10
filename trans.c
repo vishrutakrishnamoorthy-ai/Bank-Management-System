@@ -29,6 +29,7 @@ void saveTransaction(int accNum, char type[], double amount, double balance);
 void showTransactionHistory(void);
 void searchAccount(FILE *fPtr);
 void showAccountHistory(int accountNum, FILE *fPtr);
+int loginSystem(void);
 
 // Get current timestamp
 void getTimestamp(char *timestamp)
@@ -46,6 +47,11 @@ int main(int argc, char *argv[])
 
     printf("=== BANK MANAGEMENT SYSTEM ===\n");
     printf("=============================\n");
+
+    if (!loginSystem())
+    {
+        return 1;
+    }
 
     // Open clients.dat in read/write binary mode
     if ((cfPtr = fopen(filename, "rb+")) == NULL)
@@ -720,6 +726,48 @@ void searchAccount(FILE *fPtr)
     {
         printf("\nNo matching account found!\n");
     }
+}
+
+int loginSystem(void)
+{
+    char username[20];
+    char password[20];
+
+    int attempts = 0;
+
+    const char correctUsername[] = "admin";
+    const char correctPassword[] = "admin123";
+
+    printf("=================================\n");
+    printf("      BANK LOGIN SYSTEM\n");
+    printf("=================================\n");
+
+    while (attempts < 3)
+    {
+        printf("\nUsername: ");
+        scanf("%19s", username);
+
+        printf("Password: ");
+        scanf("%19s", password);
+
+        if (strcmp(username, correctUsername) == 0 &&
+            strcmp(password, correctPassword) == 0)
+        {
+            printf("\nAccess Granted!\n");
+            return 1;
+        }
+
+        attempts++;
+
+        printf("\nInvalid credentials!\n");
+        printf("Attempts remaining: %d\n",
+               3 - attempts);
+    }
+
+    printf("\nToo many failed attempts!\n");
+    printf("Program terminated.\n");
+
+    return 0;
 }
 
 // 9. Display menu and get choice
