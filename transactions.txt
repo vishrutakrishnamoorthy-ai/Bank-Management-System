@@ -1,3 +1,5 @@
 [2026-05-10 12:50:21] Account: 006 | ACCOUNT CREATED | $  10000.00 | Balance: $  10000.00
 [2026-05-10 12:51:57] Account: 006 | DEPOSIT | $    100.00 | Balance: $  10100.00
 [2026-05-10 12:52:14] Account: 006 | WITHDRAWAL | $    500.00 | Balance: $   9600.00
+[2026-05-10 15:08:16] Account: 005 | TRANSFER SENT | $   1000.00 | Balance: $5000456799.00
+[2026-05-10 15:08:16] Account: 006 | TRANSFER RECEIVED | $   1000.00 | Balance: $  10600.00

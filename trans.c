@@ -24,6 +24,7 @@ void deleteRecord(FILE *fPtr);
 int findEmptyRecord(FILE *fPtr);
 void depositRecord(FILE *fPtr);
 void withdrawRecord(FILE *fPtr);
+void transferMoney(FILE *fPtr);
 void saveTransaction(int accNum, char type[], double amount, double balance);
 void showTransactionHistory(void);
 void showAccountHistory(int accountNum, FILE *fPtr);
@@ -71,7 +72,7 @@ int main(int argc, char *argv[])
     }
 
     // Main menu loop
-    while ((choice = enterChoice()) != 7)
+    while ((choice = enterChoice()) != 8)
     {
         switch(choice)
         {
@@ -92,6 +93,9 @@ int main(int argc, char *argv[])
                 break;
             case 6:
                 showTransactionHistory();
+                break;
+            case 7:
+                transferMoney(cfPtr);
                 break;
             default:
                 printf("Invalid choice! Please enter 1-7.\n");
@@ -439,6 +443,145 @@ void withdrawRecord(FILE *fPtr)
     }
 }
 
+void transferMoney(FILE *fPtr)
+{
+    struct clientData sender = {0};
+    struct clientData receiver = {0};
+
+    unsigned int senderAcc;
+    unsigned int receiverAcc;
+
+    double amount;
+
+    printf("\n=== MONEY TRANSFER ===\n");
+
+    printf("Enter sender account number: ");
+    scanf("%u", &senderAcc);
+
+    printf("Enter receiver account number: ");
+    scanf("%u", &receiverAcc);
+
+    while (getchar() != '\n');
+
+    if (senderAcc == receiverAcc)
+    {
+        printf("Cannot transfer to same account!\n");
+        return;
+    }
+
+    if (senderAcc < 1 || senderAcc > 100 ||
+        receiverAcc < 1 || receiverAcc > 100)
+    {
+        printf("Invalid account number!\n");
+        return;
+    }
+
+    printf("Enter transfer amount: $");
+    scanf("%lf", &amount);
+
+    while (getchar() != '\n');
+
+    if (amount <= 0)
+    {
+        printf("Invalid transfer amount!\n");
+        return;
+    }
+
+    // Read sender
+    fseek(fPtr,
+          (senderAcc - 1) * sizeof(struct clientData),
+          SEEK_SET);
+
+    if (fread(&sender,
+              sizeof(struct clientData),
+              1,
+              fPtr) != 1)
+    {
+        printf("Error reading sender account!\n");
+        return;
+    }
+
+    if (sender.acctNum == 0)
+    {
+        printf("Sender account does not exist!\n");
+        return;
+    }
+
+    // Read receiver
+    fseek(fPtr,
+          (receiverAcc - 1) * sizeof(struct clientData),
+          SEEK_SET);
+
+    if (fread(&receiver,
+              sizeof(struct clientData),
+              1,
+              fPtr) != 1)
+    {
+        printf("Error reading receiver account!\n");
+        return;
+    }
+
+    if (receiver.acctNum == 0)
+    {
+        printf("Receiver account does not exist!\n");
+        return;
+    }
+
+    if (amount > sender.balance)
+    {
+        printf("Insufficient balance!\n");
+        return;
+    }
+
+    // Transfer
+    sender.balance -= amount;
+    receiver.balance += amount;
+
+    // Save sender
+    fseek(fPtr,
+          (senderAcc - 1) * sizeof(struct clientData),
+          SEEK_SET);
+
+    fwrite(&sender,
+           sizeof(struct clientData),
+           1,
+           fPtr);
+
+    // Save receiver
+    fseek(fPtr,
+          (receiverAcc - 1) * sizeof(struct clientData),
+          SEEK_SET);
+
+    fwrite(&receiver,
+           sizeof(struct clientData),
+           1,
+           fPtr);
+
+    // Log transactions
+    saveTransaction(sender.acctNum,
+                    "TRANSFER SENT",
+                    amount,
+                    sender.balance);
+
+    saveTransaction(receiver.acctNum,
+                    "TRANSFER RECEIVED",
+                    amount,
+                    receiver.balance);
+
+    printf("\n*** TRANSFER SUCCESSFUL! ***\n");
+
+    printf("Transferred $%.2f from Account %u to Account %u\n",
+           amount,
+           senderAcc,
+           receiverAcc);
+
+    printf("Sender Balance: $%.2f\n",
+           sender.balance);
+
+    printf("Receiver Balance: $%.2f\n",
+           receiver.balance);
+}
+
 // 9. Display menu and get choice
 unsigned int enterChoice(void)
 {
@@ -451,7 +594,8 @@ unsigned int enterChoice(void)
     printf("4. Add new account\n");
     printf("5. Delete account\n");
     printf("6. View transaction history\n");
-    printf("7. Exit\n");
+    printf("7. Transfer money\n");
+    printf("8. Exit\n");
     printf("Choice (1-7): ");
 
     scanf("%u", &choice);
