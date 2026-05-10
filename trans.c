@@ -27,6 +27,7 @@ void withdrawRecord(FILE *fPtr);
 void transferMoney(FILE *fPtr);
 void saveTransaction(int accNum, char type[], double amount, double balance);
 void showTransactionHistory(void);
+void searchAccount(FILE *fPtr);
 void showAccountHistory(int accountNum, FILE *fPtr);
 
 // Get current timestamp
@@ -72,7 +73,7 @@ int main(int argc, char *argv[])
     }
 
     // Main menu loop
-    while ((choice = enterChoice()) != 8)
+    while ((choice = enterChoice()) != 9)
     {
         switch(choice)
         {
@@ -97,8 +98,11 @@ int main(int argc, char *argv[])
             case 7:
                 transferMoney(cfPtr);
                 break;
+            case 8:
+                searchAccount(cfPtr);
+                break;
             default:
-                printf("Invalid choice! Please enter 1-7.\n");
+                printf("Invalid choice! Please enter 1-9.\n");
                 break;
         }
         printf("\n");
@@ -582,21 +586,157 @@ void transferMoney(FILE *fPtr)
            receiver.balance);
 }
 
+void searchAccount(FILE *fPtr)
+{
+    struct clientData client = {0};
+
+    int choice;
+    int found = 0;
+
+    unsigned int accountNum;
+
+    char firstName[10];
+    char lastName[15];
+
+    printf("\n=== SEARCH ACCOUNT ===\n");
+    printf("1. Search by account number\n");
+    printf("2. Search by first name\n");
+    printf("3. Search by last name\n");
+
+    printf("Choice: ");
+    scanf("%d", &choice);
+
+    while (getchar() != '\n');
+
+    rewind(fPtr);
+
+    switch(choice)
+    {
+        case 1:
+
+            printf("Enter account number: ");
+            scanf("%u", &accountNum);
+
+            while (getchar() != '\n');
+
+            while (fread(&client,
+                          sizeof(struct clientData),
+                          1,
+                          fPtr) == 1)
+            {
+                if (client.acctNum == accountNum)
+                {
+                    printf("\n=== ACCOUNT FOUND ===\n");
+
+                    printf("Account Number : %03d\n",
+                           client.acctNum);
+
+                    printf("Name           : %s %s\n",
+                           client.firstName,
+                           client.lastName);
+
+                    printf("Balance        : $%.2f\n",
+                           client.balance);
+
+                    found = 1;
+                    break;
+                }
+            }
+
+            break;
+
+        case 2:
+
+            printf("Enter first name: ");
+            scanf("%9s", firstName);
+
+            while (getchar() != '\n');
+
+            while (fread(&client,
+                          sizeof(struct clientData),
+                          1,
+                          fPtr) == 1)
+            {
+                if (strcmp(client.firstName,
+                           firstName) == 0)
+                {
+                    printf("\n=== ACCOUNT FOUND ===\n");
+
+                    printf("Account Number : %03d\n",
+                           client.acctNum);
+
+                    printf("Name           : %s %s\n",
+                           client.firstName,
+                           client.lastName);
+
+                    printf("Balance        : $%.2f\n\n",
+                           client.balance);
+
+                    found = 1;
+                }
+            }
+
+            break;
+
+        case 3:
+
+            printf("Enter last name: ");
+            scanf("%14s", lastName);
+
+            while (getchar() != '\n');
+
+            while (fread(&client,
+                          sizeof(struct clientData),
+                          1,
+                          fPtr) == 1)
+            {
+                if (strcmp(client.lastName,
+                           lastName) == 0)
+                {
+                    printf("\n=== ACCOUNT FOUND ===\n");
+
+                    printf("Account Number : %03d\n",
+                           client.acctNum);
+
+                    printf("Name           : %s %s\n",
+                           client.firstName,
+                           client.lastName);
+
+                    printf("Balance        : $%.2f\n\n",
+                           client.balance);
+
+                    found = 1;
+                }
+            }
+
+            break;
+
+        default:
+            printf("Invalid search choice!\n");
+            return;
+    }
+
+    if (!found)
+    {
+        printf("\nNo matching account found!\n");
+    }
+}
+
 // 9. Display menu and get choice
 unsigned int enterChoice(void)
 {
     unsigned int choice;
-
     printf("\n=== MAIN MENU ===\n");
     printf("1. List accounts to accounts.txt\n");
     printf("2. Deposit money\n");
     printf("3. Withdraw money\n");
-    printf("4. Add new account\n");
-    printf("5. Delete account\n");
-    printf("6. View transaction history\n");
-    printf("7. Transfer money\n");
-    printf("8. Exit\n");
-    printf("Choice (1-7): ");
+    printf("4. Transfer money\n");
+    printf("5. Add new account\n");
+    printf("6. Delete account\n");
+    printf("7. View transaction history\n");
+    printf("8. Search account\n");
+    printf("9. Exit\n");
+    printf("Choice (1-9): ");
 
     scanf("%u", &choice);
     while (getchar() != '\n');
